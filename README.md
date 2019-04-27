@@ -5,8 +5,8 @@
 **Vanilla Alpine docker container to trigger the "auto-build"** of other Docker Hub repository.
 
 - Docker image: `keinos/alpine:latest` ([Old versions](https://hub.docker.com/r/keinos/alpine/tags))
-  - BaseImage: Alpine:latest
-  - TimeZone: 'Asia/Tokyo'
+  - BaseImage: `alpine:latest`
+  - Time Zone: `Asia/Tokyo`
 - GitHub: <https://github.com/KEINOS/Dockerfile_of_Alpine>
 - Docker Hub: <https://hub.docker.com/r/keinos/alpine>
 
