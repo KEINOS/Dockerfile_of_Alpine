@@ -2,7 +2,7 @@
 
 # Dockerfile of Alpine
 
-**Vanilla Alpine docker image to trigger the "auto-build"** of other Docker Hub repository.
+**Vanilla Alpine docker container to trigger the "auto-build"** of other Docker Hub repository.
 
 - Docker image: `keinos/alpine:latest` ([Old versions](https://hub.docker.com/r/keinos/alpine/tags))
 - GitHub: <https://github.com/KEINOS/Dockerfile_of_Alpine>
@@ -10,7 +10,7 @@
 
 ## Usage
 
-1. Use `keinos/alpine:latest` in your Dockerfile 'FROM' instruction.
+1. Specify `keinos/alpine:latest` as a base image in the 'FROM:' directive in your Dockerfile of the source repository.
 
     ```yaml
     FROM keinos/alpine:latest
@@ -20,9 +20,12 @@
 
 2. Create a repository on Docker Hub and push your files.
     - If your files are on GitHub then link to GitHub's repository.
-3. Edit "Configure Automated Builds" at Docker Hub's "build" tab.
+
+3. "Manage Repository" and "Configure Automated Builds" at Docker Hub's "Builds" tab.
+
 4. Enable the configuration below:
     - Build configurations
-      - EPOSITORY LINKS
+      - REPOSITORY LINKS
         - "Enable for Base Image" -> Enable
 
+5. Then, whenever the `keinos/alpine:latest` is updated, the build in your repsitory on Docker Hub should be triggered as well.
