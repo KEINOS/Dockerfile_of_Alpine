@@ -57,7 +57,7 @@ echo 'Commit and pushing to GitHub ...'
 git add . && \
 git commit -m "feat: v${VERSION_NEW}" && \
 git tag "v{$VERSION_NEW}" && \
-git push origin
+git push --follow-tags origin
 if [ $? -ne 0 ]; then
   echo '* Failed commit and push'
   exit 1
