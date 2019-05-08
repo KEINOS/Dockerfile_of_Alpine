@@ -3,7 +3,7 @@
 # This script checks the latest Alpine docker image version.
 #
 # Exits with a "1"(false) staus if no update found. If found, it will update
-# the keinos/alpine:latest and exits with a status "0"(true).
+# the keinos/alpine:latest and version tags and exits with a status "0"(true).
 #
 # NOTE: This script must run on local and only was tested with macOS(Mojave).
 #
@@ -57,9 +57,10 @@ echo "- Updated: Dockerfile"
 # Updating git
 echo 'Commit and pushing to GitHub ...'
 git add . && \
-git commit -m "feat: v${VERSION_NEW}" && \
+git commit -m "feat: Alpine v${VERSION_NEW}" && \
 git tag "v${VERSION_NEW}" && \
-git push --follow-tags origin
+git push --tags && \
+git push origin
 if [ $? -ne 0 ]; then
   echo '* Failed commit and push'
   exit 1
