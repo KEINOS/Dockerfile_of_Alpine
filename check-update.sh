@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-# This script checks the latest Alpine docker image version
-# and updates keinos/alpine:latest.
+# This script checks the latest Alpine docker image version.
+#
+# Exits with a "1"(false) staus if no update found. If found, it will update
+# the keinos/alpine:latest and exits with a status "0"(true).
 #
 # NOTE: This script must run on local and only was tested with macOS(Mojave).
 #
@@ -28,8 +30,8 @@ echo '- Latest version:' $VERSION_NEW
 
 # Compare
 if [ $VERSION_ID = $VERSION_NEW ]; then
-   echo 'Same version. Do nothing.'
-   exit 0
+   echo 'No update found. Do nothing.'
+   exit 1
 fi
 
 #  Update
@@ -44,7 +46,7 @@ if [ $? -ne 0 ]; then
 fi
 echo "- Updated: ${PATH_FILE_VER_INFO}"
 
-# Updating Dockerfile
+# Updating Alpine version label in Dockerfile
 sed -i.previous -E "s/[0-9]+\.[0-9]+\.[0-9]/${VERSION_NEW}/" ./Dockerfile
 if [ $? -ne 0 ]; then
   echo '* Failed update: Dockerfile'
