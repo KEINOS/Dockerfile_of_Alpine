@@ -32,4 +32,3 @@
 
 5. Then, whenever the `keinos/alpine:latest` is updated, the build in your repsitory on Docker Hub should be triggered as well.
 
-- 2019/04/27: At this moment the Base image trigger is not working.
