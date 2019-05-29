@@ -2,13 +2,20 @@
 
 # Dockerfile of Alpine
 
-**Vanilla Alpine docker container to trigger the "auto-build"** of other Docker Hub repository.
+Vanilla Alpine docker container with Asia/Tokyo timezone.
 
-- Docker image: `keinos/alpine:latest` ([Old versions](https://hub.docker.com/r/keinos/alpine/tags))
+```bash
+docker pull keinos/alpine
+```
+
+- Note: This image is used to trigger the "auto-build" in other Docker Hub repositories of mine.
+- Image info:
   - BaseImage: `alpine:latest`
+  - Alpine Version: [View available versions](https://hub.docker.com/r/keinos/alpine/tags))
   - Time Zone: `Asia/Tokyo`
-- GitHub: <https://github.com/KEINOS/Dockerfile_of_Alpine>
-- Docker Hub: <https://hub.docker.com/r/keinos/alpine>
+- Repositories:
+  - Image: https://hub.docker.com/r/keinos/alpine @ Docker Hub
+  - Source: https://github.com/KEINOS/Dockerfile_of_Alpine @ GitHub
 
 ## Usage
 
@@ -31,4 +38,3 @@
         - "Enable for Base Image" -> Enable
 
 5. Then, whenever the `keinos/alpine:latest` is updated, the build in your repsitory on Docker Hub should be triggered as well.
-
