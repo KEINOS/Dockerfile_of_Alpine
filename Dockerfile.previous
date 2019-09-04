@@ -4,6 +4,6 @@ RUN apk --update add tzdata && \
     echo 'Asia/Tokyo' > /etc/timezone
 
 FROM alpine:latest
-LABEL alpine="3.9.4"
+LABEL alpine="3.10.1"
 COPY --from=build-env /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 COPY --from=build-env /etc/timezone /etc/timezone
