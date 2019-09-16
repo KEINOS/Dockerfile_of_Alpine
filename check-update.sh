@@ -16,6 +16,10 @@
 
 # Define Basic Variables
 PATH_FILE_VER_INFO='VERSION.txt'
+NAME_IMAGE_DOCKER='keinos/alpine'
+
+# Displays Docker Version info to see Docker Cloud Architecture
+docker version
 
 # Load current version info
 . ./$PATH_FILE_VER_INFO
@@ -55,7 +59,7 @@ fi
 echo "- Updated: Dockerfile"
 
 # Updating git
-echo 'Commit and pushing to GitHub ...'
+echo 'GIT: Committing and pushing to GitHub ...'
 git add . && \
 git commit -m "feat: Alpine v${VERSION_NEW}" && \
 git tag "v${VERSION_NEW}" && \
@@ -67,4 +71,18 @@ if [ $? -ne 0 ]; then
 fi
 echo "- Pushed: GitHub"
 
-echo "Now wait until the Docker Hub's automated build finishes build the image."
+cat <<'HEREDOC'
+=========================================================================
+Now wait until the Docker Clouds automated build finishes build the image
+and pushes to Docker Hub.
+Once the automated image was pushed to Docker Hub, then run the command
+below on Mac then on Raspberry Pi.
+
+  $ ./build-image.sh
+
+This command will build the image for AMD and ARM architecture and pushes
+to Docker Hub.
+=========================================================================
+UPDATE DONE.
+
+HEREDOC

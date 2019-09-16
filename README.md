@@ -2,10 +2,10 @@
 
 # Dockerfile of Alpine
 
-Vanilla Alpine docker container with Asia/Tokyo timezone.
+Vanilla Alpine docker container with Asia/Tokyo timezone. The `latest` tag supports both AMD64 and ARM architecture.
 
 ```bash
-docker pull keinos/alpine
+docker pull keinos/alpine:latest
 ```
 
 - Note: This image is used to trigger the "auto-build" in other Docker Hub repositories of mine.
