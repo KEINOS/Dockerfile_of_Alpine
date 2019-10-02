@@ -2,15 +2,23 @@
 
 # Dockerfile of Alpine
 
-Vanilla Alpine docker container with Asia/Tokyo timezone. The `latest` tag supports both AMD64 and ARM architecture.
+Vanilla Alpine docker container with Asia/Tokyo timezone.
+
+The `latest` tag supports both AMD64 and ARMv7l architecture.
 
 ```bash
 docker pull keinos/alpine:latest
 ```
 
+For ARMv6l architecture such as RaspberryPi Zero.
+
+```bash
+docker pull keinos/alpine:arm32v6
+```
+
 - Note: This image is used to trigger the "auto-build" in other Docker Hub repositories of mine.
 - Image info:
-  - BaseImage: `alpine:latest`
+  - BaseImage: `alpine:latest` / `arm32v6/alpine:latest`
   - Alpine Version: [View available versions](https://hub.docker.com/r/keinos/alpine/tags))
   - Time Zone: `Asia/Tokyo`
 - Repositories:
