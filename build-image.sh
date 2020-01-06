@@ -35,7 +35,7 @@ PATH_FILE_VER_INFO='VERSION.txt'
 NAME_TAG_IMAGE="keinos/alpine:${NAME_OS}-${NAME_CPU_ARCH}"
 NAME_TAG_LATEST='keinos/alpine:latest'
 
-LIST_TAG_PULL=("linux-arm" "darwin-amd64" "linux-amd64")
+LIST_TAG_PULL=("linux-arm" "linux-armv7l" "linux-armv6l" "darwin-amd64" "linux-amd64")
 
 # -----------------------------------------------------------------------------
 #  Functions
@@ -98,7 +98,7 @@ MANIFESTS=''
 for NAME_TAG in ${LIST_TAG_PULL[@]}; do
     NAME_TAG_PULL="keinos/alpine:$NAME_TAG"
     echo "- Pulling: ${NAME_TAG_PULL}"
-    docker pull $NAME_TAG_PULL
+    docker pull $NAME_TAG_PULL && \
     MANIFESTS+=" ${NAME_TAG_PULL}"
 done
 
@@ -113,3 +113,5 @@ MANIFEST_LIST="keinos/alpine:v$VERSION_OS"
 echo '- Manifest list and manifests to include:' $MANIFEST_LIST$MANIFESTS
 docker manifest create $MANIFEST_LIST$MANIFESTS --amend
 docker manifest push $MANIFEST_LIST --purge
+
+
