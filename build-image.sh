@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -eu
-
 cat <<'HEREDOC'
 ===============================================================================
   Local image builder for Tokyo locale ready Alpine image.
@@ -18,116 +16,123 @@ pushes to Docker Hub the images made.
 
 HEREDOC
 
+[ 'true' = $(docker version --format {{.Client.Experimental}}) ] || {
+   echo 'Docker daemon not in experimental mode.'
+   exit 1
+}
+
 # -----------------------------------------------------------------------------
 #  Common Variables
 # -----------------------------------------------------------------------------
-NAME_CPU_ARCH=$(docker version --format '{{.Client.Arch}}')
-NAME_OS=$(docker version --format '{{.Client.Os}}')
+NAME_IMAGE='keinos/alpine'
 PATH_FILE_VER_INFO='VERSION.txt'
-NAME_TAG_IMAGE="keinos/alpine:${NAME_OS}-${NAME_CPU_ARCH}"
-NAME_TAG_LATEST='keinos/alpine:latest'
-LIST_TAG_PULL=("arm32v6" "arm32v7" "arm64" "amd64")
-NAME_INSTANCE_BUILDER=mybuilder
-
-# -----------------------------------------------------------------------------
-#  Functions
-# -----------------------------------------------------------------------------
-isExperimantal () {
-    [ 'true' = $(docker version --format {{.Client.Experimental}}) ] && {
-        return 0
-    }
-    return 1
-}
-
-isMac () {
-    sw_vers 2>/dev/null 1>/dev/null
-    return $?
-}
-
-isPi () {
-    #cat /proc/cpuinfo | grep "^model name\s*:\s*ARMv" 2>&1 > /dev/null
-    grep --quiet "^model name\s*:\s*ARMv" /proc/cpuinfo 2>/dev/null 1>/dev/null
-    return $?
-}
-
-if ! isExperimantal ; then
-   echo 'Docker daemon not in experimental mode.'
-   exit 0
-fi
+NAME_BUILDER=mybuilder
 
 # -----------------------------------------------------------------------------
 #  Main
 # -----------------------------------------------------------------------------
 
-echo '- Docker login'
-docker login
-
-echo '- Building images and pushing to server ... '
-docker buildx ls | grep $NAME_INSTANCE_BUILDER && {
-    docker buildx rm
-}
-
-docker buildx ls | grep amd64 | grep arm64 | grep arm/v7 | grep arm/v6 && \
-docker buildx create --name $NAME_INSTANCE_BUILDER && \
-docker buildx use $NAME_INSTANCE_BUILDER && \
-docker buildx inspect --bootstrap
-
-docker buildx build \
-    --pull \
-    --platform linux/arm/v6 \
-    --file ./Dockerfile.arm32v6 \
-    -t keinos/alpine:arm32v6 \
-    --push .
-
-docker buildx build \
-    --pull \
-    --platform linux/arm/v7 \
-    --file ./Dockerfile.arm32v7 \
-    -t keinos/alpine:arm32v7 \
-    --push .
-
-docker buildx build \
-    --pull \
-    --platform linux/arm64 \
-    -t keinos/alpine:arm64 \
-    --push .
-
-docker buildx build \
-    --pull \
-    --platform linux/amd64 \
-    -t keinos/alpine:amd64 \
-    --push .
-
-#echo '- Updating git to origin'
-#git pull origin
-
 # Load current Alpine version info
-. ./$PATH_FILE_VER_INFO
+source ./$PATH_FILE_VER_INFO
 VERSION_OS=$VERSION_ID
 echo '- Current Alpine version:' $VERSION_OS
 
-echo "- Removing latest image: ${NAME_TAG_LATEST}"
-docker image rm --force $NAME_TAG_LATEST
+echo '- Login to Docker:'
+docker login 2>/dev/null 1>/dev/null || {
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || {
+        echo 'You need to login Docker Cloud/Hub first.'
+        exit 1
+    }
+}
 
-# Pull all images to inclue in manifest file
-MANIFESTS=''
-for NAME_TAG in ${LIST_TAG_PULL[@]}; do
-    NAME_TAG_PULL="keinos/alpine:$NAME_TAG"
-    #echo "- Removing image from local: ${NAME_TAG_PULL}"
-    #docker image rm --force $NAME_TAG_PULL
-    #echo "- Pulling: ${NAME_TAG_PULL}"
-    #docker pull $NAME_TAG_PULL && \
-    MANIFESTS+=" ${NAME_TAG_PULL}"
-done
+echo '- docker buildx ls'
+docker buildx ls
 
-# Create manifest list for latest tag and push
-MANIFEST_LIST=$NAME_TAG_LATEST
-echo '- Manifest list and manifests to include:' $MANIFEST_LIST$MANIFESTS
-docker manifest create $MANIFEST_LIST$MANIFESTS --amend
-docker manifest push $MANIFEST_LIST --purge
+docker buildx ls | grep $NAME_BUILDER
+[ $? -ne 0 ] && {
+    echo '- Create builder: ' $NAME_BUILDER
+    docker buildx create --name $NAME_BUILDER
+}
 
-# Create manifest list for current vertion tag and push
-MANIFEST_LIST="keinos/alpine:v$VERSION_OS"
-echo '- Manifest list and manifests to include:' $MANIFEST_LIST$MANIFESTS
-docker manifest create $MANIFEST_LIST$MANIFESTS --amend
-docker manifest push $MANIFEST_LIST --purge
+echo '- Start build:'
+docker buildx use $NAME_BUILDER
+docker buildx inspect --bootstrap
+
+# Build ARMv6
+NAME_TAG='arm32v6'
+docker buildx build \
+    --build-arg \
+        NAME_BASE="${NAME_TAG}/alpine" \
+        VER_ALPINE="v${VERSION_OS}" \
+    --platform linux/arm/v6 \
+    -t "${NAME_IMAGE}:${NAME_TAG}" \
+    --push . && \
+docker pull "${NAME_IMAGE}:${NAME_TAG}"
+
+# Build ARMv7
+NAME_TAG='arm32v7'
+docker buildx build \
+    --build-arg \
+        NAME_BASE="${NAME_TAG}/alpine" \
+        VER_ALPINE="v${VERSION_OS}" \
+    --platform linux/arm/v7 \
+    -t "${NAME_IMAGE}:${NAME_TAG}" \
+    --push . \
+&& docker pull "${NAME_IMAGE}:${NAME_TAG}"
+
+# Build AMD64
+NAME_TAG='amd64'
+docker buildx build \
+    --build-arg \
+        NAME_BASE="alpine" \
+        VER_ALPINE="v${VERSION_OS}" \
+    --platform linux/amd64 \
+    -t "${NAME_IMAGE}:${NAME_TAG}" \
+    --push . \
+&& docker pull "${NAME_IMAGE}:${NAME_TAG}"
+
+# Build ARM64
+NAME_TAG='arm64'
+docker buildx build \
+    --build-arg \
+        NAME_BASE="alpine" \
+        VER_ALPINE="v${VERSION_OS}" \
+    --platform linux/arm64 \
+    -t "${NAME_IMAGE}:${NAME_TAG}" \
+    --push . \
+&& docker pull "${NAME_IMAGE}:${NAME_TAG}"
+
+docker buildx imagetools inspect $NAME_IMAGE
+docker buildx use default
+
+# Create manifest list with latest tag
+NAME_TAG_LATEST="${NAME_IMAGE}:latest"
+docker image rm --force $NAME_TAG_LATEST 2>/dev/null 1>/dev/null
+docker manifest create $NAME_TAG_LATEST \
+    $NAME_IMAGE:amd64 \
+    $NAME_IMAGE:arm32v6 \
+    $NAME_IMAGE:arm32v7 \
+    $NAME_IMAGE:arm64 \
+    --amend
+docker manifest annotate $NAME_TAG_LATEST \
+    $NAME_IMAGE:arm32v6 --os linux --arch arm --variant v6l
+docker manifest annotate $NAME_TAG_LATEST \
+    $NAME_IMAGE:arm32v7 --os linux --arch arm --variant v7l
+docker manifest inspect $NAME_TAG_LATEST
+docker manifest push $NAME_TAG_LATEST --purge
+
+# Create manifest list with current version
+NAME_TAG_CURRENT="${NAME_IMAGE}:${VERSION_OS}"
+docker image rm --force $NAME_TAG_CURRENT 2>/dev/null 1>/dev/null
+docker manifest create $NAME_TAG_CURRENT \
+    $NAME_IMAGE:amd64 \
+    $NAME_IMAGE:arm32v6 \
+    $NAME_IMAGE:arm32v7 \
+    $NAME_IMAGE:arm64 \
+    --amend
+docker manifest annotate $NAME_TAG_CURRENT \
+    $NAME_IMAGE:arm32v6 --os linux --arch arm --variant v6l
+docker manifest annotate $NAME_TAG_CURRENT \
+    $NAME_IMAGE:arm32v7 --os linux --arch arm --variant v7l
+docker manifest inspect $NAME_TAG_CURRENT
+docker manifest push $NAME_TAG_CURRENT --purge

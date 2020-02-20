@@ -22,7 +22,7 @@ NAME_IMAGE_DOCKER='keinos/alpine'
 docker version
 
 # Load current version info
-. ./$PATH_FILE_VER_INFO
+source ./$PATH_FILE_VER_INFO
 echo '- Current version:' $VERSION_ID
 
 # Pull latest Alpine image
@@ -44,19 +44,12 @@ echo 'Newer version found. Updating ...'
 
 # Updating VERSION.txt
 echo "VERSION_ID=${VERSION_NEW}" > ./$PATH_FILE_VER_INFO
+./build-image.sh
 if [ $? -ne 0 ]; then
   echo "* Failed update: ${PATH_FILE_VER_INFO}"
   exit 1
 fi
-echo "- Updated: ${PATH_FILE_VER_INFO}"
-
-# Updating Alpine version label in Dockerfile
-sed -i.previous -E "s/[0-9]+\.[0-9]+\.[0-9]/${VERSION_NEW}/" ./Dockerfile
-if [ $? -ne 0 ]; then
-  echo '* Failed update: Dockerfile'
-  exit 1
-fi
-echo "- Updated: Dockerfile"
+echo "- Updated"
 
 # Updating git
 echo 'GIT: Committing and pushing to GitHub ...'
@@ -70,19 +63,3 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 echo "- Pushed: GitHub"
-
-cat <<'HEREDOC'
-=========================================================================
-Now wait until the Docker Clouds automated build finishes build the image
-and pushes to Docker Hub.
-Once the automated image was pushed to Docker Hub, then run the command
-below on Mac then on Raspberry Pi.
-
-  $ ./build-image.sh
-
-This command will build the image for AMD and ARM architecture and pushes
-to Docker Hub.
-=========================================================================
-UPDATE DONE.
-
-HEREDOC
