@@ -1,6 +1,9 @@
 #!/bin/bash
 
 cat <<'HEREDOC'
+
+NOTE: Run check-update.sh which calls this script.
+
 ===============================================================================
   Local image builder for Tokyo locale ready Alpine image.
 ===============================================================================
@@ -61,9 +64,8 @@ docker buildx inspect --bootstrap
 # Build ARMv6
 NAME_TAG='arm32v6'
 docker buildx build \
-    --build-arg \
-        NAME_BASE="${NAME_TAG}/alpine" \
-        VER_ALPINE="v${VERSION_OS}" \
+    --build-arg NAME_BASE="${NAME_TAG}/alpine" \
+    --build-arg VER_ALPINE="v${VERSION_OS}" \
     --platform linux/arm/v6 \
     -t "${NAME_IMAGE}:${NAME_TAG}" \
     --push . && \
@@ -72,9 +74,8 @@ docker pull "${NAME_IMAGE}:${NAME_TAG}"
 # Build ARMv7
 NAME_TAG='arm32v7'
 docker buildx build \
-    --build-arg \
-        NAME_BASE="${NAME_TAG}/alpine" \
-        VER_ALPINE="v${VERSION_OS}" \
+    --build-arg NAME_BASE="${NAME_TAG}/alpine" \
+    --build-arg VER_ALPINE="v${VERSION_OS}" \
     --platform linux/arm/v7 \
     -t "${NAME_IMAGE}:${NAME_TAG}" \
     --push . \
@@ -83,9 +84,8 @@ docker buildx build \
 # Build AMD64
 NAME_TAG='amd64'
 docker buildx build \
-    --build-arg \
-        NAME_BASE="alpine" \
-        VER_ALPINE="v${VERSION_OS}" \
+    --build-arg NAME_BASE="alpine" \
+    --build-arg VER_ALPINE="v${VERSION_OS}" \
     --platform linux/amd64 \
     -t "${NAME_IMAGE}:${NAME_TAG}" \
     --push . \
@@ -94,9 +94,8 @@ docker buildx build \
 # Build ARM64
 NAME_TAG='arm64'
 docker buildx build \
-    --build-arg \
-        NAME_BASE="alpine" \
-        VER_ALPINE="v${VERSION_OS}" \
+    --build-arg NAME_BASE="alpine" \
+    --build-arg VER_ALPINE="v${VERSION_OS}" \
     --platform linux/arm64 \
     -t "${NAME_IMAGE}:${NAME_TAG}" \
     --push . \
@@ -122,7 +121,7 @@ docker manifest inspect $NAME_TAG_LATEST
 docker manifest push $NAME_TAG_LATEST --purge
 
 # Create manifest list with current version
-NAME_TAG_CURRENT="${NAME_IMAGE}:${VERSION_OS}"
+NAME_TAG_CURRENT="${NAME_IMAGE}:v${VERSION_OS}"
 docker image rm --force $NAME_TAG_CURRENT 2>/dev/null 1>/dev/null
 docker manifest create $NAME_TAG_CURRENT \
     $NAME_IMAGE:amd64 \
